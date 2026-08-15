@@ -8,8 +8,14 @@ test.describe('Toolshop homepage',() => {
     test('should display the product listing page', async ({page}) => {
         const homePage = new HomePage(page);
 
-        await expect(homePage.productHeading).toBeVisible();
+        await expect(homePage.logoLink).toBeVisible();
         await expect(homePage.productCards.first()).toBeVisible();
-        await (homePage.searchInput.fill('pliers'));
+    })
+
+    test('should search product by keyword', async ({page}) => {
+        const homePage = new HomePage(page);
+
+        await homePage.searchProduct('pliers');
+        await expect(homePage.productNames.first()).toContainText(/pliers/i);
     })
 }) 
