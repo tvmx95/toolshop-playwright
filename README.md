@@ -1,55 +1,55 @@
 # Toolshop Playwright Automation
 
-Automated UI testing practice project for the [Practice Software Testing](https://practicesoftwaretesting.com) website using Playwright and TypeScript.
+UI automation practice project for the [Practice Software Testing](https://practicesoftwaretesting.com) Toolshop website, built with Playwright Test and TypeScript.
 
-## Project Status
+## Current Test Coverage
 
-This project is currently under development.
+The homepage smoke suite currently contains six tests:
 
-Current coverage:
+- Display the Toolshop logo and product listing
+- Search for a product by keyword (`pliers`)
+- Filter products by the **Hand Tools** category
+- Filter products by the **Screwdriver** subcategory
+- Filter products by the **MightyCraft Hardware** brand
+- Filter products by the **Show only eco-friendly products** option and verify the eco badge
 
-- Open the Toolshop homepage
-- Verify that the homepage is displayed
-- Verify that the product listing contains products
-- Page Object Model for the homepage is being developed
+The suite uses a Page Object Model to keep homepage locators and reusable actions separate from test scenarios.
 
 ## Technology
 
-- Playwright Test
+- [Playwright Test](https://playwright.dev/docs/test-intro)
 - TypeScript
-- Node.js
-- Chromium
+- Node.js and npm
+- Chromium (Desktop Chrome device profile)
 - GitHub Actions
 
 ## Project Structure
 
 ```text
 toolshop-playwright/
+├── .github/
+│   └── workflows/
+│       └── playwright.yml
 ├── pages/
 │   └── home.page.ts
 ├── tests/
 │   └── smoke/
 │       └── homepage.spec.ts
-├── .github/
-│   └── workflows/
-│       └── playwright.yml
-├── playwright.config.ts
+├── .gitignore
+├── package-lock.json
 ├── package.json
-└── package-lock.json
+├── playwright.config.ts
+└── README.md
 ```
-
-### Folder Responsibilities
 
 - `tests/` contains test scenarios and assertions.
 - `pages/` contains Page Object Models, locators, and reusable page actions.
-- `.github/workflows/` contains the GitHub Actions configuration.
-- `playwright.config.ts` contains the global Playwright configuration.
+- `.github/workflows/` contains the continuous integration workflow.
+- `playwright.config.ts` contains the shared Playwright configuration.
 
 ## Prerequisites
 
-Install the following software:
-
-- Node.js
+- Node.js (the CI workflow uses the latest LTS release)
 - npm
 - Git
 
@@ -63,29 +63,21 @@ git --version
 
 ## Installation
 
-Clone the repository:
+Clone and enter the repository:
 
 ```bash
 git clone https://github.com/tvmx95/toolshop-playwright.git
-```
-
-Enter the project directory:
-
-```bash
 cd toolshop-playwright
 ```
 
-Install project dependencies:
+Install the locked dependencies and the Chromium browser:
 
 ```bash
-npm install
+npm ci
+npx playwright install chromium
 ```
 
-Install the Playwright browsers:
-
-```bash
-npx playwright install
-```
+Use `npx playwright install --with-deps chromium` on Linux when the required system dependencies are not already installed.
 
 ## Running Tests
 
@@ -95,51 +87,52 @@ Run all tests:
 npx playwright test
 ```
 
-Run the homepage Smoke Test:
+Run only the homepage smoke suite:
 
 ```bash
 npx playwright test tests/smoke/homepage.spec.ts
 ```
 
-Run tests in headed mode:
+Useful alternatives:
 
 ```bash
-npx playwright test --headed
-```
-
-Run tests in UI Mode:
-
-```bash
+# Run in Playwright UI Mode
 npx playwright test --ui
-```
 
-Run tests in debug mode:
-
-```bash
+# Run with the Playwright Inspector
 npx playwright test --debug
-```
 
-List all discovered tests without running them:
-
-```bash
+# List discovered tests without running them
 npx playwright test --list
 ```
 
-## Test Configuration
+The project configuration currently sets `headless: false`, so a normal test run opens the browser window. For a headless run, change the `headless` value in `playwright.config.ts` or override the configuration in a dedicated CI config.
 
-The project is configured with:
+## Playwright Configuration
 
-- Base URL: `https://practicesoftwaretesting.com`
-- Browser: Chromium
-- Test directory: `tests`
-- Test timeout: 30 seconds
-- Assertion timeout: 5 seconds
-- Test ID attribute: `data-test`
-- Screenshot: Captured on failure
-- Video: Retained on failure
-- Trace: Captured on the first retry
+| Setting | Current value |
+| --- | --- |
+| Base URL | `https://practicesoftwaretesting.com` |
+| Test directory | `tests` |
+| Browser project | Chromium using `Desktop Chrome` |
+| Parallel execution | Enabled |
+| Test timeout | 30 seconds |
+| Assertion timeout | 5 seconds |
+| Local retries | 0 |
+| CI retries | 2 |
+| Test ID attribute | `data-test` |
+| Screenshot | Only on failure |
+| Video | Retained on failure |
+| Trace | On the first retry |
+| Reporters | List and HTML |
 
-Because the website uses `data-test`, elements can be located with:
+The configured base URL allows tests and page objects to navigate with relative paths such as:
+
+```typescript
+await page.goto('/');
+```
+
+The custom test ID attribute allows Playwright locators such as:
 
 ```typescript
 page.getByTestId('search-query');
@@ -148,118 +141,65 @@ page.getByTestId('product-name');
 
 ## Locator Strategy
 
-Preferred locator order:
+Prefer user-facing and stable locators in this order:
 
-1. Accessible role
-
-```typescript
-page.getByRole('button', {name: 'Search'});
-```
-
+1. Accessible role and name
 2. Label or placeholder
+3. Stable `data-test` value through `getByTestId()`
+4. A short CSS selector when pattern matching is required
+
+Examples from the current Page Object Model:
 
 ```typescript
-page.getByRole('textbox', {name: 'Search'});
+page.getByRole('button', {name: 'Search', exact: true});
+page.getByTestId('search-query');
+page.locator('a[data-test^="product-"]');
 ```
 
-3. Stable Test ID
-
-```typescript
-page.getByTestId('product-name');
-```
-
-4. Short CSS selector when pattern matching is required
-
-```typescript
-page.locator(
-  'a[data-test^="product-"][href^="/product/"]'
-);
-```
-
-Avoid generated Product IDs such as:
-
-```typescript
-page.locator(
-  '[data-test="product-01M02H8TN0YEXC0TDY9VXTT9FW"]'
-);
-```
-
-The ID may change when the application data is reset.
+Avoid selecting a product by a generated full ID because application data resets may change that value.
 
 ## Page Object Model
 
-Page Object Models keep locators and page actions separate from test scenarios.
+`pages/home.page.ts` owns the homepage locators and reusable actions, including:
 
-Example:
+- Search by keyword
+- Filter by Hand Tools
+- Filter by Screwdriver
+- Filter by MightyCraft Hardware
+- Filter by sustainability
 
-```typescript
-import {type Locator, type Page} from '@playwright/test';
+Tests in `tests/smoke/homepage.spec.ts` call these actions and keep the assertions in the test scenarios.
 
-export class HomePage {
-  readonly page: Page;
-  readonly productCards: Locator;
-  readonly productNames: Locator;
-  readonly searchInput: Locator;
+## Reports and Test Artifacts
 
-  constructor(page: Page) {
-    this.page = page;
-
-    this.productCards = page.locator(
-      'a[data-test^="product-"][href^="/product/"]'
-    );
-
-    this.productNames = page.getByTestId('product-name');
-
-    this.searchInput = page.getByRole('textbox', {
-      name: 'Search',
-    });
-  }
-
-  async open(): Promise<void> {
-    await this.page.goto('/');
-  }
-}
-```
-
-## Test Reports
-
-After running the tests, open the HTML report with:
+Open the most recently generated HTML report:
 
 ```bash
 npx playwright show-report
 ```
 
-Test artifacts may be generated in:
+Local runs may generate:
 
 ```text
 playwright-report/
 test-results/
 ```
 
-These directories should not be committed to Git.
+Both directories are ignored by Git.
 
 ## Continuous Integration
 
-GitHub Actions runs the Playwright tests when code is:
+The GitHub Actions workflow runs the Playwright suite for:
 
-- Pushed to `main` or `master`
-- Submitted through a Pull Request to `main` or `master`
+- Pushes to `main` or `master`
+- Pull requests targeting `main` or `master`
 
-The HTML report is uploaded as a GitHub Actions artifact when the workflow finishes.
+The workflow installs dependencies with `npm ci`, installs Playwright browsers and Linux dependencies, runs all tests, and uploads `playwright-report/` as an artifact with a 30-day retention period when the job is not cancelled.
 
 ## Planned Improvements
 
-- Complete the Homepage Page Object Model
-- Add Search Product coverage
 - Add Product Detail coverage
-- Add category and price filtering coverage
+- Add price filtering coverage
 - Add reusable test data
 - Add negative test scenarios
 - Expand cross-browser coverage
-
-## References
-
-- [Playwright Documentation](https://playwright.dev/docs/intro)
-- [Playwright Locators](https://playwright.dev/docs/locators)
-- [Page Object Models](https://playwright.dev/docs/pom)
-- [Running Playwright Tests](https://playwright.dev/docs/running-tests)
