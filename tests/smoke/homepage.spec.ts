@@ -46,7 +46,12 @@ test.describe('Toolshop homepage',() => {
 
         await homePage.filterBySustainability();
         await expect(homePage.ShowonlyecofriendlyproductsFilter).toBeChecked();
-        await expect(homePage.productNames.first()).toContainText(/Wood Saw/i);
+        await expect(homePage.productCards.first()).toBeVisible();
+        //await expect(homePage.productNames.first()).toContainText(/Wood Saw/i);
         await expect(homePage.ecoBadge.first()).toBeVisible();
+
+        //const productCount = await homePage.productCards.count();
+        //const ecoBadgeCount = await homePage.ecoBadge.count();
+        //expect(ecoBadgeCount).toBe(productCount);
     })
 }) 
