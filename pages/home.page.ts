@@ -63,6 +63,11 @@ export class HomePage {
         await this.searchInput.fill(keyword);
         await this.searchButton.click();
     }
+    async openProduct(productNames: string): Promise<void> {
+        await this.productNames
+            .filter({hasText: productNames})
+            .click();
+    }
 
         // Filter
     async filterByHandTools(): Promise<void> {
