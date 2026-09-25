@@ -2,22 +2,45 @@ import { type Locator, type Page } from '@playwright/test';
 
 export class CheckoutPage {
     readonly page: Page;
+    //singIn
     readonly signInTab: Locator
+    
+    //Guest
     readonly continueAsGuestTab: Locator;
     readonly guestHeading: Locator;
     readonly emailInput: Locator;
     readonly firstNameInput: Locator;
     readonly lastNameInput: Locator;
     readonly continueAsGuestButton: Locator;
+    readonly guestSummary: Locator
+    readonly proceedToCheckoutButton: Locator;
+    
+    //Billing Address section
+    readonly billingHeading: Locator;
+    readonly countrySelect: Locator;
+    readonly postalCodeInput: Locator;
+    readonly houseNumberInput: Locator;
+    readonly streetInput: Locator;
+    readonly cityInput: Locator;
+    readonly stateInput: Locator;
+
+    //Payment
+    readonly paymentHeading: Locator;
+    readonly paymentMethodSelect: Locator;
+    readonly confirmButton: Locator;
+    readonly paymentSuccessfulMgs: Locator;
+
+    //Confrimetion Order
+    readonly orderConfirmation: Locator;
 
     constructor(page: Page) {
         this.page = page;
-
+    //Sign In tab
         this.signInTab = page.getByRole('tab', {
             name: 'Sign in',
             exact: true
         })
-
+    //Guest tab
         this.continueAsGuestTab = page.getByRole('tab', {
             name: 'Continue as Guest',
             exact: true,
@@ -47,6 +70,73 @@ export class CheckoutPage {
             name: 'Continue as Guest',
             exact: true,
         });
+        this.guestSummary = page.getByText(
+            'Continuing as guest: Test User (guest@example.com)',
+            { exact: true });
+
+        this.proceedToCheckoutButton = page.getByRole('button', {
+            name: 'Proceed to checkout',
+            exact: true, 
+        });
+
+    //Billing Address section
+        this.billingHeading = page.getByRole('heading', {
+            name: 'Billing Address',
+            exact: true,
+        });
+
+        this.countrySelect = page.getByRole('combobox',{
+            name: 'Country',
+            exact: true,
+        });
+
+        this.postalCodeInput = page.getByRole('textbox', {
+            name: 'Postal code',
+            exact: true,
+        });
+
+        this.houseNumberInput = page.getByRole('textbox', {
+            name: 'House number',
+            exact: true
+        });
+
+        this.streetInput = page.getByRole('textbox', {
+            name: 'Street',
+            exact: true
+        });
+
+        this.cityInput = page.getByRole('textbox', {
+            name: 'City',
+            exact: true
+        });
+
+        this.stateInput = page.getByRole('textbox', {
+            name: 'State',
+            exact: true
+        });
+
+    //Payment Section
+        this.paymentHeading = page.getByRole('heading', {
+            name: 'Payment',
+            exact: true,
+        })
+
+        this.paymentMethodSelect = page.getByRole('combobox', {
+            name: 'Payment Method',
+            exact: true,
+        })
+        
+        this.confirmButton = page.getByRole('button', {
+            name: 'Confirm',
+            exact: true,
+        })
+
+        this.paymentSuccessfulMgs = page.getByTestId('payment-success-message')
+
+    //Confirmation Order
+        this.orderConfirmation = page.locator('#order-confirmation');
+
+// v ending of constructor below       
     }
 
     async selectContinueAsGuest(): Promise<void> {
@@ -64,5 +154,41 @@ export class CheckoutPage {
 
     async clickContinueAsGuest(): Promise<void> {
         await this.continueAsGuestButton.click();
-    }    
+    }
+    //Click Check out to next page
+    async proceedToCheckoutButtToNext(): Promise<void> {
+    await this.proceedToCheckoutButton.click();
+    }
+
+    // get valua to fill out method
+    async fillBillingAddress(
+        country: string,
+        postalCode: string,
+        houseNumber: string,
+        street: string,
+        city: string,
+        state: string): Promise<void> {
+        await this.countrySelect.selectOption({label: country});
+        await this.postalCodeInput.fill(postalCode);
+        await this.houseNumberInput.fill(houseNumber);
+        await this.streetInput.fill(street);
+        await this.cityInput.fill(city);
+        await this.stateInput.fill(state);
+    }
+
+    // select payment method method
+    async selectPaymentMethod(paymentMethod:string): Promise<void> {
+        await this.paymentMethodSelect.selectOption({
+            label: paymentMethod
+        })
+    }
+    // confirm order
+    async confirmOrder(): Promise<void> {
+        await this.confirmButton.click();
+    }
+
+// Dynamic locator
+
+
+//  ending of Class below   
 }

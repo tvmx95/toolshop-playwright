@@ -25,7 +25,7 @@ export class CartPage {
         await this.proceedToCheckoutButton.click();
     }
 
-    // Dynamic Locator คือ locator รับค่ามา //
+// Dynamic Locator คือ locator รับค่ามา //
 
     // this product name method for check name on cart page -> can change no need to create new one
     productName(name: string): Locator {
