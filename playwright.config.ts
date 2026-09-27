@@ -22,7 +22,10 @@ export default defineConfig({
     baseURL: 'https://practicesoftwaretesting.com',
     headless: false,
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    screenshot: {
+      mode: 'only-on-failure',
+      fullPage: true,
+    },
     video: 'retain-on-failure',
     testIdAttribute: 'data-test',
   },
@@ -32,6 +35,9 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        viewport: null,
+        deviceScaleFactor: undefined,        
+        launchOptions: {args:['--start-maximized'],}
       },
     },
   ],

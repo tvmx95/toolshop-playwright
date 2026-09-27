@@ -2,6 +2,16 @@ import {test, expect} from '@playwright/test';
 import {HomePage} from '../../pages/home.page'
 
 test.describe('Toolshop homepage',() => {
+    const searchCases = [
+        {
+            keyword: 'pliers',
+            expectedProduct: /pliers/i,
+        },
+        {
+            keyword: 'screwdriver',
+            expectedProduct: /screwdriver/i,
+        }
+    ]
     test.beforeEach (async({page}) => {
         await page.goto('/')
             });
@@ -12,12 +22,16 @@ test.describe('Toolshop homepage',() => {
         await expect(homePage.productCards.first()).toBeVisible();
     })
 
-    test('should search product by keyword', async ({page}) => {
-        const homePage = new HomePage(page);
+    for (const searchCase of searchCases) {
+        test(`should search product: ${searchCase.keyword}`,
+            async ({page}) => {
+                const homePage = new HomePage(page);
 
-        await homePage.searchProduct('pliers');
-        await expect(homePage.productNames.first()).toContainText(/pliers/i);
-    })
+                await homePage.searchProduct(searchCase.keyword);
+                await expect(homePage.productNames.first()).toContainText(searchCase.expectedProduct);
+            }
+        )
+    }
 
     test('should filter product by Hand Tools category', async ({page}) => {
         const homePage = new HomePage(page);

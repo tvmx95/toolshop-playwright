@@ -10,6 +10,12 @@ export type BillingAddress = {
     state:string;
 }
 
+export type GuestInformation = {
+    email: string,
+    firstName: string,
+    lastName: string
+}
+
 export class CheckoutPage {
     readonly page: Page;
     //Sign In
@@ -152,14 +158,10 @@ export class CheckoutPage {
     async selectContinueAsGuest(): Promise<void> {
         await this.continueAsGuestTab.click();
     }
-    async fillGuestInformation(
-        email: string,
-        firstName: string,
-        lastName: string
-    ): Promise<void> {
-        await this.emailInput.fill(email);
-        await this.firstNameInput.fill(firstName);
-        await this.lastNameInput.fill(lastName);
+    async fillGuestInformation(guestInformation:GuestInformation): Promise<void> {
+        await this.emailInput.fill(guestInformation.email);
+        await this.firstNameInput.fill(guestInformation.firstName);
+        await this.lastNameInput.fill(guestInformation.lastName);
     }
 
     async clickContinueAsGuest(): Promise<void> {
@@ -178,7 +180,6 @@ export class CheckoutPage {
         await this.streetInput.fill(address.street);
         await this.cityInput.fill(address.city);
         await this.stateInput.fill(address.state);
-
     }
 
     async selectPaymentMethod(paymentMethod:string): Promise<void> {
