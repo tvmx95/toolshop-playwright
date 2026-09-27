@@ -1,8 +1,18 @@
 import { type Locator, type Page } from '@playwright/test';
 
+export type BillingAddress = {
+    country:string;
+    countryCode:string;
+    postalCode:string;
+    houseNumber:string;
+    street:string;
+    city:string;
+    state:string;
+}
+
 export class CheckoutPage {
     readonly page: Page;
-    //singIn
+    //Sign In
     readonly signInTab: Locator
     
     //Guest
@@ -28,9 +38,9 @@ export class CheckoutPage {
     readonly paymentHeading: Locator;
     readonly paymentMethodSelect: Locator;
     readonly confirmButton: Locator;
-    readonly paymentSuccessfulMgs: Locator;
+    readonly paymentSuccessfulMessage: Locator;
 
-    //Confrimetion Order
+    //Confrimation Order
     readonly orderConfirmation: Locator;
 
     constructor(page: Page) {
@@ -131,9 +141,9 @@ export class CheckoutPage {
             exact: true,
         })
 
-        this.paymentSuccessfulMgs = page.getByTestId('payment-success-message')
+        this.paymentSuccessfulMessage = page.getByTestId('payment-success-message')
 
-    //Confirmation Order
+    // Order confirmation
         this.orderConfirmation = page.locator('#order-confirmation');
 
 // v ending of constructor below       
@@ -155,39 +165,30 @@ export class CheckoutPage {
     async clickContinueAsGuest(): Promise<void> {
         await this.continueAsGuestButton.click();
     }
-    //Click Check out to next page
-    async proceedToCheckoutButtToNext(): Promise<void> {
+    async proceedToNextCheckoutStep(): Promise<void> {
     await this.proceedToCheckoutButton.click();
     }
 
     // get valua to fill out method
-    async fillBillingAddress(
-        country: string,
-        postalCode: string,
-        houseNumber: string,
-        street: string,
-        city: string,
-        state: string): Promise<void> {
-        await this.countrySelect.selectOption({label: country});
-        await this.postalCodeInput.fill(postalCode);
-        await this.houseNumberInput.fill(houseNumber);
-        await this.streetInput.fill(street);
-        await this.cityInput.fill(city);
-        await this.stateInput.fill(state);
+        // object fill out
+    async fillBillingAddress(address: BillingAddress): Promise<void> {
+        await this.countrySelect.selectOption({label:address.country});
+        await this.postalCodeInput.fill(address.postalCode);
+        await this.houseNumberInput.fill(address.houseNumber);
+        await this.streetInput.fill(address.street);
+        await this.cityInput.fill(address.city);
+        await this.stateInput.fill(address.state);
+
     }
 
-    // select payment method method
     async selectPaymentMethod(paymentMethod:string): Promise<void> {
         await this.paymentMethodSelect.selectOption({
             label: paymentMethod
         })
     }
-    // confirm order
     async confirmOrder(): Promise<void> {
         await this.confirmButton.click();
     }
-
-// Dynamic locator
 
 
 //  ending of Class below   

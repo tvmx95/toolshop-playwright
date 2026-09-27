@@ -3,16 +3,27 @@ import {test, expect} from '@playwright/test';
 import {HomePage} from '../../pages/home.page';
 import {ProductPage} from '../../pages/product.page';
 import {CartPage} from '../../pages/cart.page';
-import {CheckoutPage} from '../../pages/checkout.page';
+import {CheckoutPage, type BillingAddress} from '../../pages/checkout.page';
 
 test.describe('Add product to cart',() => {
 
     test('should complete purchase as guest', async ({page}) => {
-        // create object to this tc
+        // create  page object to this tc
         const homePage = new HomePage(page);
         const productPage = new ProductPage(page)
         const cartPage = new CartPage(page)
         const checkoutPage = new CheckoutPage(page);
+
+        //กรอกแบบ object    
+        const billingAddress: BillingAddress = {
+            country: 'Thailand',
+            countryCode: 'TH',
+            postalCode: '10110',
+            houseNumber: '99',
+            street: 'Sukhumvit Road',
+            city: 'Bangkok',
+            state: 'Bangkok',
+        };
 
         // go to website
         await page.goto('/');
@@ -64,7 +75,7 @@ test.describe('Add product to cart',() => {
         await expect(checkoutPage.lastNameInput).toBeVisible();
         await expect(checkoutPage.continueAsGuestButton).toBeVisible();
         
-        // fill out guest infomation
+        // fill out guest information
         await checkoutPage.fillGuestInformation(
             'guest@example.com',
             'Test',
@@ -79,26 +90,19 @@ test.describe('Add product to cart',() => {
         await expect(checkoutPage.guestSummary).toBeVisible();
         await expect(checkoutPage.proceedToCheckoutButton).toBeVisible();
 
-        await checkoutPage.proceedToCheckoutButtToNext();
+        await checkoutPage.proceedToNextCheckoutStep();
 
         // Billing Address Section
         await expect(checkoutPage.billingHeading).toBeVisible();
-        await checkoutPage.fillBillingAddress(
-            'Thailand',
-            '10110',
-            '99',
-            'Sukhumvit Road',
-            'Bangkok',
-            'Bangkok',
-        )
+        await checkoutPage.fillBillingAddress(billingAddress);
 
-        await expect(checkoutPage.countrySelect).toHaveValue('TH');
-        await expect(checkoutPage.postalCodeInput).toHaveValue('10110');
-        await expect(checkoutPage.houseNumberInput).toHaveValue('99');
-        await expect(checkoutPage.streetInput).toHaveValue('Sukhumvit Road');
-        await expect(checkoutPage.cityInput).toHaveValue('Bangkok');
-        await expect(checkoutPage.stateInput).toHaveValue('Bangkok');
-        await checkoutPage.proceedToCheckoutButtToNext();
+        await expect(checkoutPage.countrySelect).toHaveValue(billingAddress.countryCode);
+        await expect(checkoutPage.postalCodeInput).toHaveValue(billingAddress.postalCode);
+        await expect(checkoutPage.houseNumberInput).toHaveValue(billingAddress.houseNumber);
+        await expect(checkoutPage.streetInput).toHaveValue(billingAddress.street);
+        await expect(checkoutPage.cityInput).toHaveValue(billingAddress.city);
+        await expect(checkoutPage.stateInput).toHaveValue(billingAddress.state);
+        await checkoutPage.proceedToNextCheckoutStep();
 
         // ก่อนเลือก Payment Method
         await expect(checkoutPage.paymentHeading).toBeVisible();    
@@ -110,7 +114,7 @@ test.describe('Add product to cart',() => {
         await expect(checkoutPage.paymentMethodSelect).toHaveValue('cash-on-delivery');
         await expect(checkoutPage.confirmButton).toBeEnabled();
         await checkoutPage.confirmOrder()
-        await expect(checkoutPage.paymentSuccessfulMgs).toContainText('Payment was successful')
+        await expect(checkoutPage.paymentSuccessfulMessage).toContainText('Payment was successful')
 
         // Confirmation Section
         await checkoutPage.confirmOrder()
