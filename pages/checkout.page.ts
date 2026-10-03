@@ -28,7 +28,7 @@ export class CheckoutPage {
     readonly firstNameInput: Locator;
     readonly lastNameInput: Locator;
     readonly continueAsGuestButton: Locator;
-    readonly guestSummary: Locator
+    //readonly guestSummary: Locator // ย้ายไปสร้าง method locator
     readonly proceedToCheckoutButton: Locator;
     
     //Billing Address section
@@ -43,8 +43,9 @@ export class CheckoutPage {
     //Payment
     readonly paymentHeading: Locator;
     readonly paymentMethodSelect: Locator;
-    readonly confirmButton: Locator;
+    readonly checkPaymentButton: Locator;
     readonly paymentSuccessfulMessage: Locator;
+    readonly confirmButton: Locator;
 
     //Confrimation Order
     readonly orderConfirmation: Locator;
@@ -86,9 +87,6 @@ export class CheckoutPage {
             name: 'Continue as Guest',
             exact: true,
         });
-        this.guestSummary = page.getByText(
-            'Continuing as guest: Test User (guest@example.com)',
-            { exact: true });
 
         this.proceedToCheckoutButton = page.getByRole('button', {
             name: 'Proceed to checkout',
@@ -142,6 +140,11 @@ export class CheckoutPage {
             exact: true,
         })
         
+        this.checkPaymentButton = page.getByRole('button', {
+            name: 'Check payment',
+            exact: true,
+        })
+
         this.confirmButton = page.getByRole('button', {
             name: 'Confirm',
             exact: true,
@@ -162,6 +165,13 @@ export class CheckoutPage {
         await this.emailInput.fill(guestInformation.email);
         await this.firstNameInput.fill(guestInformation.firstName);
         await this.lastNameInput.fill(guestInformation.lastName);
+    }
+    
+    guestSummary(guestInformation: GuestInformation): Locator {
+        return this.page.getByText(
+            `Continuing as guest: ${guestInformation.firstName} ${guestInformation.lastName} (${guestInformation.email})`,
+            { exact: true }
+        );
     }
 
     async clickContinueAsGuest(): Promise<void> {
@@ -187,6 +197,10 @@ export class CheckoutPage {
             label: paymentMethod
         })
     }
+    async checkPayment(): Promise<void> {
+        await this.checkPaymentButton.click();
+    }
+
     async confirmOrder(): Promise<void> {
         await this.confirmButton.click();
     }

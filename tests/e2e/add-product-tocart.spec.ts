@@ -3,10 +3,7 @@ import {test, expect} from '@playwright/test';
 import {HomePage} from '../../pages/home.page';
 import {ProductPage} from '../../pages/product.page';
 import {CartPage} from '../../pages/cart.page';
-import {
-    CheckoutPage, 
-    type GuestInformation, 
-    type BillingAddress} from '../../pages/checkout.page';
+import {CheckoutPage, type GuestInformation, type BillingAddress} from '../../pages/checkout.page';
 
 test.describe('User can purchase product without registration',() => {
 
@@ -28,29 +25,31 @@ test.describe('User can purchase product without registration',() => {
             state: 'Bangkok',
         };
 
-        const guestinformation: GuestInformation = {
+        const guestInformation: GuestInformation = {
             email: 'guest@example.com',
             firstName: 'Test',
             lastName: 'User'
         }
+
+        const productName = 'Combination Pliers';
 
 
         await test.step('Search and open product', async () => {
             // go to website
             await page.goto('/');
             // Search product
-            await homePage.searchProduct('Combination Pliers');
+            await homePage.searchProduct(productName);
             // Open PDP
-            await homePage.openProduct('Combination Pliers');
+            await homePage.openProduct(productName);
             await expect(page).toHaveURL(/\/product\//);
             await expect(page.getByRole('heading', {
-                name: 'Combination Pliers',
+                name: productName,
                 exact: true,
             })).toBeVisible(); 
         });
 
         await test.step('Add product to cart', async () => {
-            await expect(productPage.productTitle).toHaveText('Combination Pliers');
+            await expect(productPage.productTitle).toHaveText(productName);
             await productPage.addToCart();
             await expect(page.getByText(/Product added to shopping cart/i)).toBeVisible();
         });
@@ -59,20 +58,20 @@ test.describe('User can purchase product without registration',() => {
             // open cart
             await cartPage.openCart();
             await expect(page).toHaveURL(/\/checkout/);
-            await expect(cartPage.productName('Combination Pliers')).toBeVisible();
+            await expect(cartPage.productName(productName)).toBeVisible();
 
             // check product at cart
-            await expect(cartPage.productQuantity('Combination Pliers')).toHaveValue('1');
-            await expect(cartPage.productPrice('Combination Pliers')).toHaveText('$14.15');
-            await expect(cartPage.productTotal('Combination Pliers')).toHaveText('$14.15');
+            await expect(cartPage.productQuantity(productName)).toHaveValue('1');
+            await expect(cartPage.productPrice(productName)).toHaveText('$14.15');
+            await expect(cartPage.productTotal(productName)).toHaveText('$14.15');
 
             // Increase product quantity
             await cartPage.updateProductQuantity(
-                'Combination Pliers',
+                productName,
                 2
             )
-            await expect(cartPage.productQuantity('Combination Pliers')).toHaveValue('2');
-            await expect(cartPage.productTotal('Combination Pliers')).toHaveText('$28.30');
+            await expect(cartPage.productQuantity(productName)).toHaveValue('2');
+            await expect(cartPage.productTotal(productName)).toHaveText('$28.30');
         });
 
         await test.step('Check out as guest', async () => {
@@ -93,22 +92,22 @@ test.describe('User can purchase product without registration',() => {
             await expect(checkoutPage.continueAsGuestButton).toBeVisible();
         
             // fill out guest information
-            await checkoutPage.fillGuestInformation(guestinformation);
+            await checkoutPage.fillGuestInformation(guestInformation);
             // check information after fill out and go next
-            await expect(checkoutPage.emailInput).toHaveValue(guestinformation.email);
-            await expect(checkoutPage.firstNameInput).toHaveValue(guestinformation.firstName);
-            await expect(checkoutPage.lastNameInput).toHaveValue(guestinformation.lastName);
+            await expect(checkoutPage.emailInput).toHaveValue(guestInformation.email);
+            await expect(checkoutPage.firstNameInput).toHaveValue(guestInformation.firstName);
+            await expect(checkoutPage.lastNameInput).toHaveValue(guestInformation.lastName);
             await checkoutPage.clickContinueAsGuest();
 
-            await expect(checkoutPage.guestSummary).toBeVisible();
+            await expect(checkoutPage.guestSummary(guestInformation)).toBeVisible();
             await expect(checkoutPage.proceedToCheckoutButton).toBeVisible();
 
             await checkoutPage.proceedToNextCheckoutStep();
+            await expect(checkoutPage.billingHeading).toBeVisible();
         });
 
         await test.step('Fill billing Address', async () => {
             // Billing Address Section
-            await expect(checkoutPage.billingHeading).toBeVisible();
             await checkoutPage.fillBillingAddress(billingAddress);
 
             await expect(checkoutPage.countrySelect).toHaveValue(billingAddress.countryCode);
@@ -118,21 +117,24 @@ test.describe('User can purchase product without registration',() => {
             await expect(checkoutPage.cityInput).toHaveValue(billingAddress.city);
             await expect(checkoutPage.stateInput).toHaveValue(billingAddress.state);
             await checkoutPage.proceedToNextCheckoutStep();
+            await expect(checkoutPage.paymentHeading).toBeVisible();
         });
 
-        await test.step('Select payment and confirm order', async () => {
-            // ก่อนเลือก Payment Method
-            await expect(checkoutPage.paymentHeading).toBeVisible();    
+        await test.step('Select payment method and validate payment', async () => {
+            // ก่อนเลือก Payment Method 
             await expect(checkoutPage.paymentMethodSelect).toHaveValue('');
-            await expect(checkoutPage.confirmButton).toBeDisabled();
+            await expect(checkoutPage.checkPaymentButton).toBeDisabled();
             // เลือก Payment Method
             await checkoutPage.selectPaymentMethod('Cash on Delivery');
             // หลังเลือก Payment Method
             await expect(checkoutPage.paymentMethodSelect).toHaveValue('cash-on-delivery');
+            await expect(checkoutPage.checkPaymentButton).toBeEnabled();
+            await checkoutPage.checkPayment();
+            await expect(checkoutPage.paymentSuccessfulMessage).toContainText('Payment was successful');
             await expect(checkoutPage.confirmButton).toBeEnabled();
-            await checkoutPage.confirmOrder()
-            await expect(checkoutPage.paymentSuccessfulMessage).toContainText('Payment was successful')
+        });
 
+        await test.step('Confirm and verify invioce', async () => {
             // Confirmation Section
             await checkoutPage.confirmOrder()
             await expect(checkoutPage.orderConfirmation).toContainText(/Thanks for your order! Your invoice number is INV-\d+\./)
