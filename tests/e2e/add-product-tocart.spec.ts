@@ -3,7 +3,8 @@ import {test, expect} from '@playwright/test';
 import {HomePage} from '../../pages/home.page';
 import {ProductPage} from '../../pages/product.page';
 import {CartPage} from '../../pages/cart.page';
-import {CheckoutPage, type GuestInformation, type BillingAddress} from '../../pages/checkout.page';
+import {CheckoutPage} from '../../pages/checkout.page';
+import {createGuestInformation, billingAddress, productName} from '../../test-data/guest-checkout.data';
 
 test.describe('User can purchase product without registration',() => {
 
@@ -12,27 +13,8 @@ test.describe('User can purchase product without registration',() => {
         const homePage = new HomePage(page);
         const productPage = new ProductPage(page)
         const cartPage = new CartPage(page)
-        const checkoutPage = new CheckoutPage(page);
-
-        //กรอกแบบ object    
-        const billingAddress: BillingAddress = {
-            country: 'Thailand',
-            countryCode: 'TH',
-            postalCode: '10110',
-            houseNumber: '99',
-            street: 'Sukhumvit Road',
-            city: 'Bangkok',
-            state: 'Bangkok',
-        };
-
-        const guestInformation: GuestInformation = {
-            email: 'guest@example.com',
-            firstName: 'Test',
-            lastName: 'User'
-        }
-
-        const productName = 'Combination Pliers';
-
+        const checkoutPage = new CheckoutPage(page); 
+        const guestInformation = createGuestInformation();
 
         await test.step('Search and open product', async () => {
             // go to website

@@ -20,7 +20,7 @@ export default defineConfig({
 
   use: {
     baseURL: 'https://practicesoftwaretesting.com',
-    headless: false,
+    headless: true,
     trace: 'on-first-retry',
     screenshot: {
       mode: 'only-on-failure',
