@@ -21,7 +21,7 @@ export default defineConfig({
   use: {
     baseURL: 'https://practicesoftwaretesting.com',
     headless: true,
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: {
       mode: 'only-on-failure',
       fullPage: true,
@@ -32,13 +32,32 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'chromium',
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
       use: {
         ...devices['Desktop Chrome'],
-        viewport: null,
+        viewport: { width: 1440, height: 900}
+      }
+    },
+    {
+      name: 'chromium',
+      testIgnore: '**/account.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
         deviceScaleFactor: undefined,        
         launchOptions: {args:['--start-maximized'],}
       },
+    },
+    {
+      name: 'chromium-auth',
+      testMatch: '**/account.spec.ts',
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+        storageState: 'playwright/.auth/customer.json',
+    },
     },
   ],
 });

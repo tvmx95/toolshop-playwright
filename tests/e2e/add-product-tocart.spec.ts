@@ -1,14 +1,14 @@
 // import to typescript
-import {test, expect} from '@playwright/test';
-import {HomePage} from '../../pages/home.page';
-import {ProductPage} from '../../pages/product.page';
-import {CartPage} from '../../pages/cart.page';
-import {CheckoutPage} from '../../pages/checkout.page';
-import {createGuestInformation, billingAddress, productName} from '../../test-data/guest-checkout.data';
+import { test, expect } from '@playwright/test';
+import { HomePage } from '../../pages/home.page';
+import { ProductPage } from '../../pages/product.page';
+import { CartPage } from '../../pages/cart.page';
+import { CheckoutPage } from '../../pages/checkout.page';
+import { createGuestInformation, billingAddress, productName } from '../../test-data/guest-checkout.data';
 
 test.describe('User can purchase product without registration',() => {
 
-    test('should complete purchase as guest', async ({page}) => {
+    test('should complete purchase as guest', async ({ page }) => {
         // create  page object to this tc
         const homePage = new HomePage(page);
         const productPage = new ProductPage(page)
@@ -115,11 +115,19 @@ test.describe('User can purchase product without registration',() => {
             await expect(checkoutPage.paymentSuccessfulMessage).toContainText('Payment was successful');
             await expect(checkoutPage.confirmButton).toBeEnabled();
         });
-
         await test.step('Confirm and verify invioce', async () => {
             // Confirmation Section
             await checkoutPage.confirmOrder()
-            await expect(checkoutPage.orderConfirmation).toContainText(/Thanks for your order! Your invoice number is INV-\d+\./)
+            await expect(checkoutPage.orderConfirmation).toContainText(/Thanks for your order! Your invoice number is INV-\d+\./);
+
+            const confirmationText = await checkoutPage.orderConfirmation.innerText();
+            const invoiceNumber = confirmationText.match(/INV-\d+/)?.[0];
+
+            if (!invoiceNumber) {
+                throw new Error('Invoice number not found in order confirmation');
+            }
+
+            console.log('Created invoice:', invoiceNumber)
         });
 
     //ending of test case below    
